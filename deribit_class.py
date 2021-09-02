@@ -139,23 +139,42 @@ def custom_sheet(currency='BTC', sheet_name=""):
 
     implied_dict = {}
 
-    count = 0
-    for i in instrument_names[:100]:
-        count += 1
-        if count == 25:
-            time.sleep(3)
-            count = 0
-        # print(i)
-        if "27AUG21" in i:
-            time.sleep(1)
-        order_book = ws.get_order_book(i)
-        # print("\n", order_book)
+    exp_date_strikes = get_exp_strikes(instrument_names)
 
-        implied_dict = update_mark_iv(implied_dict, order_book)
+    for expDate, strikes in exp_date_strikes.items():
+        
+
+        strikes = list(strikes)
+
+        # print("\n", expDate, sorted(strikes))
+        underlying_price = ws.get_order_book(currency + '-' + expDate + '-' + str(strikes[0]) + '-' + 'P')["underlying_price"]
+        # print(underlying_price)
+
+        closest_strike = min(strikes, key=lambda x:abs(x-underlying_price))
+        # print(closest_strike)
+        
+        mark_iv = ws.get_order_book(currency + '-' + expDate + '-' + str(closest_strike) + '-' + 'P')["mark_iv"]
+        implied_dict[expDate] = {
+                "mark_iv": mark_iv
+            }
+    
+    # count = 0
+    # for i in instrument_names[:100]:
+    #     count += 1
+    #     if count == 25:
+    #         time.sleep(3)
+    #         count = 0
+    #     # print(i)
+    #     if "27AUG21" in i:
+    #         time.sleep(1)
+    #     order_book = ws.get_order_book(i)
+    #     # print("\n", order_book)
+
+    #     implied_dict = update_mark_iv(implied_dict, order_book)
     print("\n\n", implied_dict)
     
     implied_df = pd.DataFrame.from_dict(implied_dict).transpose()
-    del implied_df["greeks_delta"]
+    # del implied_df["greeks_delta"]
     
     # calculate future pos
     positions = ws.get_positions(currency=currency, kind = 'future')

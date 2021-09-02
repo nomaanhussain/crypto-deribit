@@ -40,8 +40,22 @@ def calculate_total(data):
     # response["Sum"] = total
     return response
 
+def get_exp_strikes(instrument_names):
 
-def update_mark_iv(implied_dict, order_book):
+    exp_date_strike = {}
+    
+    for instrument_name in instrument_names:
+        date, strike = instrument_name.split('-')[1:3]
+
+        if date in exp_date_strike:
+            exp_date_strike[date].add(int(strike))
+            
+        else:
+            exp_date_strike[date] = {int(strike)}
+    
+    return exp_date_strike
+
+def update_mark_iv1(implied_dict, order_book):
     
     try:
 
