@@ -108,6 +108,17 @@ class DeribitWS:
         quote = self.async_loop(self.pub_api, json.dumps(self.msg))
 
         return quote['result']
+
+
+    def get_public_index(self, currency):
+        params = {
+            "currency": currency,
+        }
+        self.msg["method"] = "public/get_index"
+        self.msg["params"] = params
+        quote = self.async_loop(self.pub_api, json.dumps(self.msg))
+
+        return quote['result']
     
 
     def account_summary(self, currency, extended=False):
@@ -203,6 +214,10 @@ def custom_sheet(currency='BTC', sheet_name=""):
 
     acc_summary = ws.account_summary(currency=currency)
     acc_info = get_acc_information(acc_summary)
+
+    # get public index price
+    index_price = ws.get_public_index(currency=currency)
+    acc_info["index_price"] = index_price[currency]
     updateAccSummary(sheet_name, **acc_info)
 
 if __name__ == '__main__':

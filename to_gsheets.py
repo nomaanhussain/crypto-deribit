@@ -55,10 +55,12 @@ def updateAccSummary(sheet_name, **kwargs):
     sh.update_acell('D18', "Balance")
     sh.update_acell('D19', "Equity")
     sh.update_acell('D20', "Available Funds")
+    sh.update_acell('D21', "Index Price")
 
     sh.update_acell('E18', kwargs["Balance"])
     sh.update_acell('E19', kwargs["Equity"])
     sh.update_acell('E20', kwargs["Available Funds"])
+    sh.update_acell('E21', kwargs["index_price"])
 
 
 
