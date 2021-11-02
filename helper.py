@@ -80,6 +80,38 @@ def update_mark_iv1(implied_dict, order_book):
         print(str(ex))
     return implied_dict
 
+def update_mark_iv(implied_dict, order_book, put=True):
+    
+    try:
+
+        greeks_delta = order_book["greeks"]["delta"]
+        mark_iv = order_book["mark_iv"]
+
+        exp_date = order_book["underlying_index"].split('-')[1]
+
+        if put:
+            pinPoint = -0.1
+            keyname = "mark_iv_P"
+        else:
+            pinPoint = 0.1
+            keyname = "mark_iv_C"
+        if exp_date in implied_dict:
+            # if greeks_delta is more close to -0.1 than previous recorder than update its value
+            if implied_dict[exp_date]["greeks_delta"] > abs(pinPoint - greeks_delta):
+                implied_dict[exp_date] = {
+                    "greeks_delta": abs(pinPoint - greeks_delta),
+                    keyname: mark_iv
+                }
+        else:
+            implied_dict[exp_date] = {
+                "greeks_delta": abs(pinPoint - greeks_delta),
+                keyname: mark_iv
+            }
+    except Exception as ex:
+        print(str(ex))
+    return implied_dict
+
+
 
 def get_future_position(data):
     response = {}

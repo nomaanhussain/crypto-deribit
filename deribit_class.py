@@ -108,7 +108,7 @@ class DeribitWS:
         quote = self.async_loop(self.pub_api, json.dumps(self.msg))
 
         return quote['result']
-
+    
 
     def get_public_index(self, currency):
         params = {
@@ -168,24 +168,30 @@ def custom_sheet(currency='BTC', sheet_name=""):
         implied_dict[expDate] = {
                 "mark_iv": mark_iv
             }
-    
-    # count = 0
-    # for i in instrument_names[:100]:
-    #     count += 1
-    #     if count == 25:
-    #         time.sleep(3)
-    #         count = 0
-    #     # print(i)
-    #     if "27AUG21" in i:
-    #         time.sleep(1)
-    #     order_book = ws.get_order_book(i)
-    #     # print("\n", order_book)
-
-    #     implied_dict = update_mark_iv(implied_dict, order_book)
-    print("\n\n", implied_dict)
-    
+        
     implied_df = pd.DataFrame.from_dict(implied_dict).transpose()
-    # del implied_df["greeks_delta"]
+    
+    count = 0
+    implied_dict_P = {}
+    implied_dict_C = {}
+    for i in instrument_names[:]:
+        count += 1
+        if count == 10:
+            time.sleep(3)
+            count = 0
+
+        order_book = ws.get_order_book(i)
+        
+        if i.split('-')[3] == 'P':
+            implied_dict_P = update_mark_iv(implied_dict_P, order_book, put = True)
+        else:
+            implied_dict_C = update_mark_iv(implied_dict_C, order_book, put = False)
+    print("\n\n", implied_dict_P)
+    print("\n\n", implied_dict_C)
+    implied_P_df = pd.DataFrame.from_dict(implied_dict_P).transpose()
+    del implied_P_df["greeks_delta"]
+    implied_C_df = pd.DataFrame.from_dict(implied_dict_C).transpose()
+    del implied_C_df["greeks_delta"]
     
     # calculate future pos
     positions = ws.get_positions(currency=currency, kind = 'future')
@@ -193,7 +199,7 @@ def custom_sheet(currency='BTC', sheet_name=""):
     future_pos_df = pd.DataFrame.from_dict(future_pos_dict).transpose()
     print(future_pos_df)
     
-    final_df = pd.concat([greeks_df, implied_df, future_pos_df], axis=1)
+    final_df = pd.concat([greeks_df, implied_df, implied_P_df, implied_C_df, future_pos_df], axis=1)
 
     print(final_df)
     
